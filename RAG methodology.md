@@ -38,18 +38,6 @@ In the validation sample, `61` of `69` (88%) scored positives were judged correc
 
 Lexical score for a chunk was calculated as `sum(weight x number_of_regex_matches)` across the cue list for that smart buy. Semantic score was the maximum cosine similarity between the chunk embedding and the semantic query embeddings for that smart buy.
 
-### Definitions Used By The Classifier
-
-| Smart buy | Definition |
-|---|---|
-| Information | Providing information to families/learners on benefits, costs, or quality of education that changes schooling decisions. |
-| Structured pedagogy | Structured pedagogy packages with lesson plans/materials and ongoing teacher support. |
-| Targeted instruction | Targeted instruction by learning level (TaRL-style), not by grade only. |
-| Parent-directed early stimulation | Parent-directed early childhood stimulation programs (0-36 months). |
-| Quality pre-primary education | Quality pre-primary education (ages 3-5). |
-| Reducing travel barriers | Reducing travel time/cost to school. |
-| Merit scholarships / performance incentives | Merit-based scholarships or performance-linked incentives. |
-| School-based deworming | School-based mass deworming where worm-load is high. |
 
 ### Lexical Cues And Semantic Queries
 
