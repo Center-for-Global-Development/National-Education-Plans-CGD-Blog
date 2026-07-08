@@ -18,7 +18,7 @@ REVIEW STAGE: Then, the model review happened in two stages:
 
 The model had to return a structured JSON decision with a label, confidence score, rationale, and a short verbatim quote from the retrieved chunks.
 
-## Validation
+### Validation
 
 The validation checks were positive-side checks: we reviewed cases that the method had flagged as smart-buy mentions and judged whether they were real hits.
 
