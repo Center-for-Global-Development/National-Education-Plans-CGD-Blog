@@ -2,23 +2,23 @@
 
 ## Overview
 
-Each sector plan document was split into overlapping chunks of about `2,200` characters, with `250` characters of overlap.
+Each sector plan document was split into overlapping chunks of `2,200` characters, with `250` characters of overlap.
 
-For each smart buy, candidate chunks were retrieved in two ways:
+RETRIEVAL STAGE: For each smart buy, candidate chunks were retrieved in two ways:
 
-- **Lexical retrieval:** weighted phrase searches looked for intervention-specific cues and synonyms. Stronger cues counted more than weaker cues. See "Lexical Cues And Semantic Queries" below
+- **Lexical retrieval:** weighted phrase searches looked for cues and synonyms. Stronger cues counted more than weaker cues. See "Lexical Cues And Semantic Queries" below.
 - **Semantic retrieval:** embeddings from Open AI's `text-embedding-3-small` were used to find chunks that were close in meaning to short descriptions of the intervention, even if they did not use the exact search terms.
 
 The pipeline kept the top lexical and semantic hits, added nearby chunks for context.
 
-Then, the model review then happened in two stages:
+REVIEW STAGE: Then, the model review happened in two stages:
 
 - `gpt-4.1-mini` made the first-pass classification.
 - `gpt-4.1` reviewed positives and uncertain negatives.
 
 The model had to return a structured JSON decision with a label, confidence score, rationale, and a short verbatim quote from the retrieved chunks.
 
-## Validation
+### Validation
 
 The validation checks were positive-side checks: we reviewed cases that the method had flagged as smart-buy mentions and judged whether they were real hits.
 
@@ -38,18 +38,6 @@ In the validation sample, `61` of `69` (88%) scored positives were judged correc
 
 Lexical score for a chunk was calculated as `sum(weight x number_of_regex_matches)` across the cue list for that smart buy. Semantic score was the maximum cosine similarity between the chunk embedding and the semantic query embeddings for that smart buy.
 
-### Definitions Used By The Classifier
-
-| Smart buy | Definition |
-|---|---|
-| Information (`bb_info`) | Providing information to families/learners on benefits, costs, or quality of education that changes schooling decisions. |
-| Structured pedagogy (`bb_structped`) | Structured pedagogy packages with lesson plans/materials and ongoing teacher support. |
-| Targeted instruction (`bb_targeted`) | Targeted instruction by learning level (TaRL-style), not by grade only. |
-| Parent-directed early stimulation (`bb_parentstim`) | Parent-directed early childhood stimulation programs (0-36 months). |
-| Quality pre-primary education (`bb_preprimary`) | Quality pre-primary education (ages 3-5). |
-| Reducing travel barriers (`bb_travel`) | Reducing travel time/cost to school. |
-| Merit scholarships / performance incentives (`bb_merit`) | Merit-based scholarships or performance-linked incentives. |
-| School-based deworming (`bb_deworm`) | School-based mass deworming where worm-load is high. |
 
 ### Lexical Cues And Semantic Queries
 
@@ -758,7 +746,7 @@ Semantic query phrases:
 
 </details>
 
-### Generic LLM Prompt
+## Review stage generic LLM Prompt
 
 The same prompt template was used for the triage and verification models. The stronger model received the same candidate chunks and rules when a case needed verification.
 
