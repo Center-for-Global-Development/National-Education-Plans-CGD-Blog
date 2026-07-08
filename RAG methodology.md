@@ -746,7 +746,7 @@ Semantic query phrases:
 
 </details>
 
-### Review stage generic LLM Prompt
+## Review stage generic LLM Prompt
 
 The same prompt template was used for the triage and verification models. The stronger model received the same candidate chunks and rules when a case needed verification.
 
