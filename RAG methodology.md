@@ -776,13 +776,11 @@ Return: label, confidence, evidence, rationale.
 In the rationale, briefly state which core components are present or missing.
 ```
 
-## Reproduction Files
+## Replication Files
+Find our code in the analysis folder in this Git repository, we are unable to upload the input data due to lisencing.
 
 1. `analysis/replication_01_clean_data.py`
-   - prepares the input files under `output/replication/clean/`
 2. `analysis/replication_02_run_rag.py`
 3. `analysis/replication_03_make_graph.py`
 4. `analysis/replication_04_make_sp_tarl_country_graphs.py`
-   - combines the labelled English, French, and Spanish outputs and writes the country-stacked structured pedagogy and targeted instruction / TaRL graphs, plus the supporting country-year and research-timeline CSVs
 
-The second script uses the OpenAI API. By default it prints the commands it would run; pass `--yes-run-api` to actually call the API. The third and fourth scripts can also use the already completed published RAG outputs with `--source published`, which is their default.
