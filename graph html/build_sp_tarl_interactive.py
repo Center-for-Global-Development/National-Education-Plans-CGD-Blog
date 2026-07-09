@@ -638,12 +638,11 @@ HTML_TEMPLATE = r"""<!doctype html>
       margin-top: 5px;
     }
 
-    .chart-footer {
-      color: var(--cgd-dark-gray);
+    .excerpt-label {
+      color: var(--cgd-teal);
       font-size: 12px;
-      font-style: italic;
-      line-height: 1.35;
-      padding-top: 6px;
+      font-weight: 800;
+      margin-top: 8px;
     }
 
     .sr-only {
@@ -691,7 +690,6 @@ HTML_TEMPLATE = r"""<!doctype html>
       <svg id="chart-svg" role="img"></svg>
       <div class="tooltip" id="chart-tooltip" role="dialog" aria-live="polite" hidden></div>
     </div>
-    <div class="chart-footer">Source: CGD analysis of national education plans and reports; English, French, and Spanish sources combined.</div>
     <div class="sr-only" id="chart-live" aria-live="polite"></div>
   </div>
 
@@ -1172,14 +1170,20 @@ HTML_TEMPLATE = r"""<!doctype html>
         if (pinned) return;
         window.clearTimeout(closeTimer);
         closeTimer = window.setTimeout(function () {
-          if (!tooltip.matches(':hover')) hideTooltip();
-        }, 90);
+          if (!tooltip.matches(':hover') && !tooltip.matches(':focus-within')) hideTooltip();
+        }, 400);
       }
 
       tooltip.addEventListener('pointerenter', function () {
         window.clearTimeout(closeTimer);
       });
       tooltip.addEventListener('pointerleave', function () {
+        scheduleHideTooltip();
+      });
+      tooltip.addEventListener('focusin', function () {
+        window.clearTimeout(closeTimer);
+      });
+      tooltip.addEventListener('focusout', function () {
         scheduleHideTooltip();
       });
       document.addEventListener('click', function (event) {
@@ -1286,11 +1290,10 @@ HTML_TEMPLATE = r"""<!doctype html>
 
       function renderSegmentTooltip(payload) {
         var segment = payload.segment;
-        var topic = payload.topic;
         renderHeader(
           segment.country + ' · ' + segment.year,
-          segment.count + ' ' + pluralize(segment.count, 'report mention', 'report mentions'),
-          topic.shortName
+          'Matched text from plan/report',
+          null
         );
         segment.mentions.forEach(function (mention, index) {
           var item = document.createElement('div');
@@ -1304,13 +1307,17 @@ HTML_TEMPLATE = r"""<!doctype html>
             link.href = mention.url;
             link.target = '_blank';
             link.rel = 'noopener noreferrer';
-            link.textContent = 'Source URL';
+            link.textContent = 'View source';
             link.addEventListener('click', function () {
               window.CGDTracking.trackEngagement('external_link', 'source_url', payload.anchorTopic);
             });
             item.appendChild(link);
           }
           if (mention.excerpt) {
+            var label = document.createElement('div');
+            label.className = 'excerpt-label';
+            label.textContent = 'Text our method identified as showing this smart buy';
+            item.appendChild(label);
             var excerpt = document.createElement('div');
             excerpt.className = 'excerpt';
             excerpt.textContent = mention.excerpt;
@@ -1322,7 +1329,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 
       function renderTimelineTooltip(payload) {
         var event = payload.event;
-        renderHeader(String(event.year), event.label, payload.topic.shortName);
+        renderHeader(String(event.year), event.label, null);
         var detail = document.createElement('div');
         detail.className = 'excerpt';
         detail.textContent = event.detail;
