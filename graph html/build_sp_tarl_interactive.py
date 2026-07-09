@@ -97,9 +97,9 @@ TIMELINE_FALLBACK = {
         },
         {
             "year": 2014,
-            "label": '"Teaching at the right level" coined; state-side scale-ups of TaRL in India',
-            "detail": "The Teaching at the Right Level framing appeared in public evidence discussions of Pratham's approach, alongside evidence from state-level scale-up evaluations in India.",
-            "source": "https://palnetwork.org/teaching-at-the-right-level-solutions-for-low-learning-levels-in-india/; https://teachingattherightlevel.org/impact-and-learning/tarl-evidence/history-of-tarls-evidence-in-india/",
+            "label": "2013-14: TaRL scale-up models tested in Haryana and Uttar Pradesh",
+            "detail": "J-PAL and Pratham evaluated scalable TaRL models in Indian government schools, including teacher-led instruction in Haryana and learning camps in Uttar Pradesh during the 2013-14 academic year.",
+            "source": "https://palnetwork.org/teaching-at-the-right-level-solutions-for-low-learning-levels-in-india/; https://cpb-us-w2.wpmucdn.com/campuspress.yale.edu/dist/4/2450/files/2018/04/EvidenceInPractice_CaseStudy_TaRL-1mshy9c.pdf",
         },
         {
             "year": 2020,
@@ -1238,11 +1238,16 @@ HTML_TEMPLATE = r"""<!doctype html>
         tooltip.style.top = '0px';
         var width = tooltip.offsetWidth;
         var height = tooltip.offsetHeight;
-        var left = clamp(localX + 14, 8, Math.max(8, frame.clientWidth - width - 8));
-        var top = localY + 16;
-        if (top + height > frame.clientHeight - 4) {
-          top = Math.max(8, localY - height - 14);
+        var left = localX - 12;
+        if (left + width > frame.clientWidth - 8) {
+          left = localX - width + 12;
         }
+        left = clamp(left, 8, Math.max(8, frame.clientWidth - width - 8));
+        var top = localY - 12;
+        if (top + height > frame.clientHeight - 4) {
+          top = localY - height + 12;
+        }
+        top = clamp(top, 8, Math.max(8, frame.clientHeight - height - 4));
         tooltip.style.left = left + 'px';
         tooltip.style.top = top + 'px';
       }
