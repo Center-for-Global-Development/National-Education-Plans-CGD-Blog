@@ -18,6 +18,11 @@ Supporting files:
 
 The build script reads the public repo CSVs when it is run from the GitHub checkout:
 
+- `graph html/data/structured-pedagogy-evidence.csv`
+- `graph html/data/targeted-instruction-tarl-evidence.csv`
+
+If those richer evidence files are not present, it falls back to:
+
 - `graph data/Figure 2 SP.csv`
 - `graph data/Figure 3 TARL.csv`
 
@@ -27,7 +32,7 @@ When it is run from the local analysis project, it falls back to:
 - `output/bb_targeted_datawrapper_mentions_english_french_spanish_combined.csv`
 - `output/bb_sp_tarl_research_timeline_events_english_french_spanish_combined.csv`
 
-If the timeline CSV is not present, the script uses embedded timeline metadata. The mention-level CSVs are the source of truth for report names, source URLs, and text excerpts. The script aggregates them to country-year stacked segments while preserving the underlying rows for tooltips.
+If the timeline CSV is not present, the script uses embedded timeline metadata. The richer evidence CSVs include the matched evidence quote and longer surrounding text. The script aggregates mention-level rows to country-year stacked segments while preserving the underlying rows for tooltips.
 
 ## Regenerate
 
@@ -66,6 +71,7 @@ The HTML implements the CGD iframe resize postMessage contract, so the fixed sta
 - Uses the CGD palette and tooltip/iframe guidance from `cgd-interactive-toolkit`.
 - Sends CGD analytics postMessages for initial view, topic tab changes, pinned detail opens/closes, and source-link clicks.
 - Tooltips work on hover, keyboard focus, click, and tap. Click/tap pins the tooltip and exposes links.
+- Each tooltip shows the matched evidence first and, where available, a collapsible longer surrounding excerpt.
 
 ## Publishing Notes
 

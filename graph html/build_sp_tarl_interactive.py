@@ -25,6 +25,7 @@ def detect_root() -> Path:
 ROOT = detect_root()
 OUT_DIR = ROOT / "output"
 GRAPH_DATA_DIR = ROOT / "graph data"
+INTERACTIVE_DATA_DIR = HERE / "data"
 HTML_OUT = Path(__file__).with_name("sp_tarl_interactive_mentions.html")
 
 
@@ -42,6 +43,8 @@ TOPICS = [
         "mentionPhrase": "structured pedagogy",
         "timelineTopic": "Structured pedagogy",
         "mentionFile": first_existing(
+            INTERACTIVE_DATA_DIR / "structured-pedagogy-evidence.csv",
+            OUT_DIR / "bb_structped_datawrapper_mentions_review_english_french_spanish_combined.csv",
             GRAPH_DATA_DIR / "Figure 2 SP.csv",
             OUT_DIR / "bb_structped_datawrapper_mentions_english_french_spanish_combined.csv",
         ),
@@ -53,6 +56,8 @@ TOPICS = [
         "mentionPhrase": "targeted instruction / TaRL",
         "timelineTopic": "Targeted instruction / TaRL",
         "mentionFile": first_existing(
+            INTERACTIVE_DATA_DIR / "targeted-instruction-tarl-evidence.csv",
+            OUT_DIR / "bb_targeted_datawrapper_mentions_review_english_french_spanish_combined.csv",
             GRAPH_DATA_DIR / "Figure 3 TARL.csv",
             OUT_DIR / "bb_targeted_datawrapper_mentions_english_french_spanish_combined.csv",
         ),
@@ -187,6 +192,10 @@ def clean_text(value: str, max_chars: int | None = None) -> str:
     return text
 
 
+def normalize_compare(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
+
+
 def country_code(country: str) -> str:
     if country in COUNTRY_CODES:
         return COUNTRY_CODES[country]
@@ -240,13 +249,21 @@ def read_mentions(path: Path) -> list[dict[str, object]]:
             year = int(float(row["year"]))
         except ValueError:
             continue
+        evidence_quote = clean_text(row.get("evidence_quote", ""), max_chars=760)
+        short_excerpt = clean_text(row.get("short_excerpt", ""), max_chars=520)
+        paragraph_text = clean_text(row.get("paragraph_text", ""), max_chars=1150)
+        display_excerpt = evidence_quote or short_excerpt or paragraph_text
+        context_excerpt = paragraph_text
+        if context_excerpt and normalize_compare(context_excerpt) == normalize_compare(display_excerpt):
+            context_excerpt = ""
         rows.append(
             {
                 "country": clean_text(row.get("country", "")),
                 "year": year,
                 "reportName": clean_text(row.get("report_name", ""), max_chars=220),
                 "url": clean_text(row.get("url", "")),
-                "excerpt": clean_text(row.get("paragraph_text", ""), max_chars=460),
+                "excerpt": display_excerpt,
+                "contextExcerpt": context_excerpt,
             }
         )
     return rows
@@ -548,6 +565,19 @@ HTML_TEMPLATE = r"""<!doctype html>
       font-weight: 600;
     }
 
+    .evidence-cue-line {
+      fill: none;
+      stroke: var(--cgd-gold);
+      stroke-linecap: round;
+      stroke-width: 2;
+    }
+
+    .evidence-cue-label {
+      fill: var(--cgd-teal);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
     .tooltip {
       background: #ffffff;
       border: 1px solid var(--cgd-teal-gray);
@@ -643,6 +673,19 @@ HTML_TEMPLATE = r"""<!doctype html>
       font-size: 12px;
       font-weight: 800;
       margin-top: 8px;
+    }
+
+    .more-context {
+      border-top: 1px solid var(--cgd-light-gray);
+      margin-top: 10px;
+      padding-top: 8px;
+    }
+
+    .more-context summary {
+      color: var(--cgd-light-teal);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
     }
 
     .sr-only {
@@ -995,6 +1038,19 @@ HTML_TEMPLATE = r"""<!doctype html>
         var desc = svgEl('desc', { id: 'chart-desc' });
         desc.textContent = 'Stacked bars by year. Each segment is a country-year count, and each focused segment provides report names, source URLs, and excerpts.';
         svg.appendChild(desc);
+        var defs = svgEl('defs', {});
+        var marker = svgEl('marker', {
+          id: 'evidence-arrowhead',
+          markerWidth: 8,
+          markerHeight: 8,
+          refX: 6,
+          refY: 3,
+          orient: 'auto',
+          markerUnits: 'strokeWidth'
+        });
+        marker.appendChild(svgEl('path', { d: 'M0,0 L0,6 L7,3 z', fill: '#FFB52C' }));
+        defs.appendChild(marker);
+        svg.appendChild(defs);
 
         appendText(svg, 'Number of plan/report mentions', 'axis-label', plot.left, 14, { 'text-anchor': 'start' });
 
@@ -1067,6 +1123,21 @@ HTML_TEMPLATE = r"""<!doctype html>
             cumulative += segment.count;
           });
         });
+
+        if (topic.id === 'structured-pedagogy' && width >= 620 && topic.segmentsByYear['2004']) {
+          var cueTargetX = xForYear(2004);
+          var cueTargetY = yForValue(0.72);
+          var cueLabelX = clamp(cueTargetX + 76, plot.left + 120, plot.right - 120);
+          var cueLabelY = Math.max(plot.top + 38, yForValue(1) - 40);
+          var cue = svgEl('g', { class: 'evidence-cue' });
+          cue.appendChild(svgEl('path', {
+            class: 'evidence-cue-line',
+            d: 'M' + (cueLabelX - 10) + ',' + (cueLabelY + 5) + ' C' + (cueLabelX - 44) + ',' + (cueLabelY + 12) + ' ' + (cueTargetX + 32) + ',' + (cueTargetY - 18) + ' ' + cueTargetX + ',' + cueTargetY,
+            'marker-end': 'url(#evidence-arrowhead)'
+          }));
+          appendText(cue, 'Click for evidence', 'evidence-cue-label', cueLabelX, cueLabelY, { 'text-anchor': 'middle' });
+          svg.appendChild(cue);
+        }
 
         var timelineGroup = svgEl('g', { class: 'timeline' });
         svg.appendChild(timelineGroup);
@@ -1327,6 +1398,24 @@ HTML_TEMPLATE = r"""<!doctype html>
             excerpt.className = 'excerpt';
             excerpt.textContent = mention.excerpt;
             item.appendChild(excerpt);
+          }
+          if (mention.contextExcerpt) {
+            var details = document.createElement('details');
+            details.className = 'more-context';
+            var summary = document.createElement('summary');
+            summary.textContent = 'Show more surrounding text';
+            details.appendChild(summary);
+            var context = document.createElement('div');
+            context.className = 'excerpt';
+            context.textContent = mention.contextExcerpt;
+            details.appendChild(context);
+            details.addEventListener('toggle', function () {
+              if (details.open) {
+                window.CGDTracking.trackEngagement('detail_open', 'surrounding_text', payload.anchorTopic);
+              }
+              if (window.CGDReportHeight) window.CGDReportHeight();
+            });
+            item.appendChild(details);
           }
           tooltip.appendChild(item);
         });
